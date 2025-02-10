@@ -81,20 +81,14 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
             screenSpaceMap.add(gee.clone());
         }
         //applying the projection matrix and view matrix to each vertex
+        //basicly moving it from world space to screen space
         for (GeometryGroup entry : screenSpaceMap) { 
             VertexPool value = entry.vertexPool;
-            for (Map.Entry<Vector3, Vector3> vertexEntry : value.sharedVertices.entrySet()) {
-                Vector3 v = vertexEntry.getValue();
-                Vector3 vertexKey = vertexEntry.getKey();
+            for (Vector3 vertexEntry : value.sharedVertices) {
+                Vector3 v = vertexEntry;
 
-                //make matrix of vertex
-                double[][] vertexArray = {
-                    {v.x},
-                    {v.y},
-                    {v.z},
-                    {1}
-                };
-                
+                //make matrix from the vertex
+                double[][] vertexArray = {{v.x},{v.y},{v.z},{1}};
                 Matrix vertexMatrix = new Matrix(vertexArray);
 
                 //applying view matrix
@@ -128,18 +122,15 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 // g.setColor(Color.RED);
                 // System.out.println("ok, drawing vertex at ("+ssv3.x+", "+ssv3.y+")");
                 // g.fillRect((int)ssv3.x, (int)ssv3.y, 5, 5);
-                value.sharedVertices.remove(vertexKey);  // Remove the old entry
-                v = ssv3;
-                
-                value.sharedVertices.add(v);
-                
+
+                v = ssv3;                
 
             }
         }
 
         //this is NOT the best way to rasterize polygons!!!! :( FIX LATER!!!
-        for (Map.Entry<VertexPool, TriangleGroup> entry : screenSpaceMap.entrySet()) { 
-            TriangleGroup value = entry.getValue();
+        for (GeometryGroup entry : screenSpaceMap) { 
+            TriangleGroup value = entry.triangleGroup;
             for(Triangle t: value.triangles){
                 Path2D.Double path = new Path2D.Double();
                 path.moveTo(t.v1.x, t.v1.y);
@@ -212,6 +203,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                         System.exit(0); // Quit the application
                         break;
                 }
+                myFrame.repaint();
     }
 
     public void keyReleased(KeyEvent e) {
