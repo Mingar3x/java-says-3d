@@ -65,7 +65,6 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     public void paintComponent(Graphics g) {
         //calculating camera matrix
         Matrix viewMatrix = c.calculateViewMatrix();
-
         Graphics2D g2 = (Graphics2D) g;
 
         g2.setColor(Color.GREEN);
@@ -118,17 +117,13 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 Matrix normalizedMatrix = new Matrix(new double[][]{{normalizedArray[0], normalizedArray[1], normalizedArray[2],1}});
                 //normalizedMatrix.display();
                 Vector3 ssv3 = new Vector3(normalizedArray[0], normalizedArray[1], normalizedArray[2]);
-                //System.out.println(ssv3);
-                // g.setColor(Color.RED);
-                // System.out.println("ok, drawing vertex at ("+ssv3.x+", "+ssv3.y+")");
-                // g.fillRect((int)ssv3.x, (int)ssv3.y, 5, 5);
 
                 v = ssv3;                
 
             }
         }
 
-        //this is NOT the best way to rasterize polygons!!!! :( FIX LATER!!!
+        //this is NOT the right way to rasterize polygons!!!! :( FIX LATER!!!!!!
         for (GeometryGroup entry : screenSpaceMap) { 
             TriangleGroup value = entry.triangleGroup;
             for(Triangle t: value.triangles){
@@ -142,34 +137,16 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 g2.fill(path);
             }
          }
-
-
-        //orthogantic rendering, dont use
-        // for (Map.Entry<VertexPool, TriangleGroup> entry : staticMeshHashmap.entrySet()) { 
-        //     TriangleGroup value = entry.getValue();
-        //     for(Triangle t: value.triangles){
-        //         Path2D.Double path = new Path2D.Double();
-        //         path.moveTo(t.v1.x, t.v1.y);
-        //         path.lineTo(t.v2.x, t.v2.y);
-        //         path.lineTo(t.v3.x, t.v3.y);
-        //         path.lineTo(t.v1.x, t.v1.y);
-        //         path.closePath();
-        //         g2.setColor(t.color);
-        //         g2.fill(path);
-        //     }
-        //  }
-        
     }
     public void initalizeScreen(){
         // yo so this ↓↓ is the camera
-        c = new Camera(0, 0, 150, new Vector3(0, 100, 0));
+        c = new Camera(0, 0, 10, new Vector3(0, 10, 0));
         projectionMatrix = c.calculateProjectionMatrix(screenWidth, screenHeight);
         //geo.makeStaticPlane(100,-100,100,-100,100,-100,Color.RED,Color.BLUE);
-        geo.makeStaticPlane(-500,500,500,-500,-500,-500,Color.RED,Color.BLUE);
+        geo.makeStaticPlane(-50,50,50,-50,-50,-50,Color.RED,Color.BLUE);
     }
     public void gameTick() {
-        //other calculations and shit
-
+        //other calculations and whatnot
         repaint();
     }
 
@@ -181,22 +158,22 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         int keyCode = e.getKeyCode(); // Get the virtual key code
                 switch (keyCode) {
                     case KeyEvent.VK_W:
-                        c.translate(0,-5,0);
+                        c.translate(0,-50,0);
                         break;
                     case KeyEvent.VK_A:
-                    c.translate(5,0,0);
+                    c.translate(50,0,0);
                         break;
                     case KeyEvent.VK_S:
-                    c.translate(0,5,0);
+                    c.translate(0,50,0);
                         break;
                     case KeyEvent.VK_D:
                         System.out.println("Move right!");
                         break;
                     case KeyEvent.VK_SPACE:
-                    c.translate(0,5,0);
+                    c.translate(0,0,50);
                         break;
                     case KeyEvent.VK_SHIFT:
-                        c.translate(0,-5,0);
+                        c.translate(0,0,-50);
                         break;
                     case KeyEvent.VK_ESCAPE:
                         System.out.println("Exit game!");

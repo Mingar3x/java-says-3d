@@ -49,8 +49,6 @@ public class Camera {
             {-forward[0], -forward[1], -forward[2], 0},
             {0, 0, 0, 1}
         });
-        // System.out.println("rotation dimentions: "+"("+rotation.rows+", "+rotation.columns+")");
-        // rotation.display();
 
         Matrix translation = new Matrix(new double[][] {
             {1, 0, 0, -eye[0]},
