@@ -7,7 +7,7 @@ public class BigUtils {
 
         double w = vector[3];
         if (w == 0) {
-            throw new ArithmeticException("Cannot divide by zero; w-axis is 0.");
+            throw new ArithmeticException("Cannot divide by zero; w-axis is 0. FIX THGAT NOWWW!!!!  ");
         }
 
         return new double[] {
@@ -39,16 +39,9 @@ public class BigUtils {
             v1[0] * v2[1] - v1[1] * v2[0]
         };
     }
-    // public static Vector3 cross(Vector3 v1, Vector3 v2) {
-    //     return new Vector3 { //do later, who ccares
-    //         v1[1] * v2[2] - v1[2] * v2[1],
-    //         v1[2] * v2[0] - v1[0] * v2[2],
-    //         v1[0] * v2[1] - v1[1] * v2[0]
-    //     };
-    // }
 
     //yes this method is basically the same as the one in the Matrix class, but this one is static
-    //also this one doesn't really work so dont use it. no i don't remeber why just dont use this
+    //also this one doesn't really work so dont use it.  just dont use this.
     public static Matrix multiplyMatrices(Matrix A, Matrix B) {
         int aRows = A.getRows();
         int aCols = A.getColumns();

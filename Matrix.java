@@ -1,4 +1,4 @@
-//this is a dynamic matrix class that can make matrices of any size
+//this is a dynamic matrix class that can (theoretically) make matrices of any size
 //pretty cool, yuh?
 public class Matrix {
     public int rows;

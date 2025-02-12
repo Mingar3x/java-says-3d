@@ -10,4 +10,7 @@ public class Triangle {
         this.v3 = v3;
         this.color = color;
     }
+    public Triangle clone(){
+        return new Triangle(v1.clone(),v2.clone(),v3.clone(),color);
+    }
 }

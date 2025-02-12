@@ -109,17 +109,20 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 // projectedMatrix.display();
 
                 //homogenous division, this method returns an array with 3 axles
-                double[] normalizedArray = BigUtils.to3D(new double[]{
+                double[] ScSpArray = BigUtils.to3D(new double[]{
                     projectedMatrix.get(0, 0), 
                     projectedMatrix.get(1, 0), 
                     projectedMatrix.get(2, 0), 
                     projectedMatrix.get(3, 0)});
-                Matrix normalizedMatrix = new Matrix(new double[][]{{normalizedArray[0], normalizedArray[1], normalizedArray[2],1}});
-                //normalizedMatrix.display();
-                Vector3 ssv3 = new Vector3(normalizedArray[0], normalizedArray[1], normalizedArray[2]);
-
-                v = ssv3;                
-
+                
+                Matrix ScSpMatrix = new Matrix(new double[][]{{ScSpArray[0], ScSpArray[1], ScSpArray[2],1}});
+                //ScSpMatrix.display();
+                Vector3 ssv3 = new Vector3(ScSpArray[0], ScSpArray[1], ScSpArray[2]);
+                
+                Vector3 ssv3REAL = toRealScreenSpace(ssv3);
+                System.out.println(ssv3REAL);
+                v.toNewPosition(ssv3REAL.x, ssv3REAL.y, ssv3REAL.z);
+                System.out.println(v.x+", "+v.y);
             }
         }
 
@@ -142,8 +145,12 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         // yo so this ↓↓ is the camera
         c = new Camera(0, 0, 10, new Vector3(0, 10, 0));
         projectionMatrix = c.calculateProjectionMatrix(screenWidth, screenHeight);
-        //geo.makeStaticPlane(100,-100,100,-100,100,-100,Color.RED,Color.BLUE);
+        
+        geo.makeStaticPlane(-500,500,500,-500,-500,-500,Color.PINK,Color.ORANGE);
         geo.makeStaticPlane(-50,50,50,-50,-50,-50,Color.RED,Color.BLUE);
+    }
+    public Vector3 toRealScreenSpace(Vector3 v){
+        return new Vector3((2 * v.x)/screenWidth, (2 * v.y)/screenHeight, v.z);
     }
     public void gameTick() {
         //other calculations and whatnot
@@ -167,7 +174,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                     c.translate(0,50,0);
                         break;
                     case KeyEvent.VK_D:
-                        System.out.println("Move right!");
+                    c.translate(0,50,0);
                         break;
                     case KeyEvent.VK_SPACE:
                     c.translate(0,0,50);
@@ -181,6 +188,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                         break;
                 }
                 myFrame.repaint();
+                //System.out.println(c);
     }
 
     public void keyReleased(KeyEvent e) {

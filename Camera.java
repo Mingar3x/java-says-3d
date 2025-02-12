@@ -5,7 +5,8 @@ public class Camera {
     public Vector3 pointingAt;
     public double fov = 90;
     public Vector3 up = new Vector3(0, 1, 0);
-    //clipping planes
+
+    //clippy plains
     double near = 0.1;
     double far = 10000;
     Camera(double x, double y, double z, Vector3 pointingAt) {
@@ -60,17 +61,29 @@ public class Camera {
         // translation.display();
 
         // erm... 🤓 here goes nothing ☝️
-        return rotation.multiply(translation);
+        Matrix result = rotation.multiply(translation);
+        //result.display();
+        return result;
     }
     public void translate(double x, double y, double z) {
         this.x+=x;
         this.y+=y;
         this.z+=z;
+        pointingAt.x +=x;
+        pointingAt.y+=y;
+        pointingAt.z+=z;
     }
     
     public void translate(Vector3 v) {
         this.x+=v.x;
         this.y+=v.y;
         this.z+=v.z;
+        pointingAt.x +=v.x;
+        pointingAt.y+=v.y;
+        pointingAt.z+=v.z;
+    }
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ", " + z + ")";
     }
 }

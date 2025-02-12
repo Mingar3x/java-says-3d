@@ -25,4 +25,11 @@ public class TriangleGroup {
             triangles.add(tri);
         }
     }
+    public TriangleGroup clone(){
+        ArrayList<Triangle> temp = new ArrayList<Triangle>();
+        for (Triangle t: triangles){
+            temp.add(t.clone());
+        }
+        return new TriangleGroup(temp);
+    }
 }

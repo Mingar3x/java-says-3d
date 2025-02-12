@@ -8,6 +8,14 @@ public class VertexPool {
     //this is a hashmap that stores vertices, and each vertex uses its location as a key. I dont recall why i chose to do this.
     //public Map<Vector3, Vector3> sharedVertices = new HashMap<>();
     public ArrayList<Vector3> sharedVertices = new ArrayList<>();
+    public VertexPool(){
+
+    }
+    public VertexPool(ArrayList<Vector3> t){
+        for (Vector3 v: t){
+            sharedVertices.add(v.clone());
+        }
+    }
     // Retrieve or create a shared vertex
     public Vector3 getSharedVertex(Vector3 Location) {
         // If the vertex exists, return it
@@ -24,5 +32,8 @@ public class VertexPool {
     //delete function
     public void clear() {
         sharedVertices.clear();
+    }
+    public VertexPool clone(){
+        return new VertexPool(sharedVertices);
     }
 }

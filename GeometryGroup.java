@@ -8,6 +8,6 @@ public class GeometryGroup {
         triangleGroup = t;
     }
     public GeometryGroup clone(){
-        return new GeometryGroup(vertexPool, triangleGroup);
+        return new GeometryGroup(vertexPool.clone(), triangleGroup.clone());
     }
 }
