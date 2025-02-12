@@ -119,10 +119,11 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 //ScSpMatrix.display();
                 Vector3 ssv3 = new Vector3(ScSpArray[0], ScSpArray[1], ScSpArray[2]);
                 
-                Vector3 ssv3REAL = toRealScreenSpace(ssv3);
-                System.out.println(ssv3REAL);
-                v.toNewPosition(ssv3REAL.x, ssv3REAL.y, ssv3REAL.z);
-                System.out.println(v.x+", "+v.y);
+
+                v.toNewPosition(ssv3.x, ssv3.y, ssv3.z);
+                //System.out.println(v.x+", "+v.y);
+                g2.setColor(Color.BLACK);
+                g2.fillRect((int)v.x,(int)v.y,5,5);
             }
         }
 
