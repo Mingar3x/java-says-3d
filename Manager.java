@@ -83,8 +83,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         //basicly moving it from world space to screen space
         for (GeometryGroup entry : screenSpaceMap) { 
             VertexPool value = entry.vertexPool;
-            for (Vector3 vertexEntry : value.sharedVertices) {
-                Vector3 v = vertexEntry;
+            for (Vector3 v : value.sharedVertices) {
 
                 //make matrix from the vertex
                 double[][] vertexArray = {{v.x},{v.y},{v.z},{1}};
