@@ -10,7 +10,7 @@ public class Triangle {
         this.v3 = v3;
         this.color = color;
     }
-    public Triangle clone(){
-        return new Triangle(v1.clone(),v2.clone(),v3.clone(),color);
+    public Triangle clone(VertexPool vp){
+        return new Triangle(vp.getSharedVertex(v1),vp.getSharedVertex(v2),vp.getSharedVertex(v3),color);
     }
 }

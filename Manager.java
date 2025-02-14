@@ -95,18 +95,6 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 //projecting each vertex
                 Matrix projectedMatrix = projectionMatrix.multiply(viewCorrectedMatrix);
 
-                //testing
-                // System.out.println("vertexMatrix rows: " + vertexMatrix.getRows() + ", columns: " + vertexMatrix.getColumns());
-                // vertexMatrix.display();
-                // System.out.println("viewMatrix rows: " + viewMatrix.getRows() + ", columns: " + viewMatrix.getColumns());
-                // viewMatrix.display();
-                // System.out.println("viewCorrectedMatrix rows: " + viewCorrectedMatrix.getRows() + ", columns: " + viewCorrectedMatrix.getColumns());
-                // viewCorrectedMatrix.display();
-                // System.out.println("projectionMatrix rows: " + projectionMatrix.getRows() + ", columns: " + projectionMatrix.getColumns());
-                // projectionMatrix.display();
-                // System.out.println("projectedMatrix rows: " + projectedMatrix.getRows() + ", columns: " + projectedMatrix.getColumns());
-                // projectedMatrix.display();
-
                 //homogenous division, this method returns an array with 3 axles
                 double[] ScSpArray = BigUtils.to3D(new double[]{
                     projectedMatrix.get(0, 0), 
@@ -140,13 +128,14 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 g2.fill(path);
             }
          }
+        System.out.println(c);
     }
     public void initalizeScreen(){
         // yo so this ↓↓ is the camera
-        c = new Camera(0, 0, 10, new Vector3(0, 10, 0));
+        c = new Camera(0, 0, 1, new Vector3(0, 0, 0));
         projectionMatrix = c.calculateProjectionMatrix(screenWidth, screenHeight);
         
-        geo.makeStaticPlane(-500,500,500,-500,-500,-500,Color.PINK,Color.ORANGE);
+        geo.makeStaticPlane(-5,5,5,-5,-5,-5,Color.PINK,Color.ORANGE);
         geo.makeStaticPlane(-50,50,50,-50,-50,-50,Color.RED,Color.BLUE);
     }
     public Vector3 toRealScreenSpace(Vector3 v){

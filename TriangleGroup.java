@@ -25,10 +25,10 @@ public class TriangleGroup {
             triangles.add(tri);
         }
     }
-    public TriangleGroup clone(){
+    public TriangleGroup clone(VertexPool vg){
         ArrayList<Triangle> temp = new ArrayList<Triangle>();
         for (Triangle t: triangles){
-            temp.add(t.clone());
+            temp.add(t.clone(vg));
         }
         return new TriangleGroup(temp);
     }

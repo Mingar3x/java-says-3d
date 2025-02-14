@@ -2,11 +2,9 @@ import java.util.ArrayList;
 //the whole point of this class is to store vertices so
 //they can be shared within continous masses, saving memory
 public class VertexPool {
-    //THIS DOES NOT WORK FOR VERTICES THAT MOVE IN WORLD SPACE
+    //THIS DOES NOT WORK FOR VERTICES THAT MOVE IN WORLD SPACE I THINK
     //NEED TO FIND WORKAROUND LATER
 
-    //this is a hashmap that stores vertices, and each vertex uses its location as a key. I dont recall why i chose to do this.
-    //public Map<Vector3, Vector3> sharedVertices = new HashMap<>();
     public ArrayList<Vector3> sharedVertices = new ArrayList<>();
     public VertexPool(){
 
@@ -24,9 +22,8 @@ public class VertexPool {
             int index = sharedVertices.indexOf(Location);
             return sharedVertices.get(index);
         }
-        Vector3 newVertex = Location;
-        sharedVertices.add(newVertex);
-        return newVertex;
+        sharedVertices.add(Location);
+        return Location;
     }
 
     //delete function
