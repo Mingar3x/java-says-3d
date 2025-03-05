@@ -1,19 +1,26 @@
 public class Camera {
-    public double x;
-    public double y;
-    public double z;
-    public Vector3 pointingAt;
+    public Vector3 position;
+    private Vector3 directionVector; 
     public double fov = 90;
     public Vector3 up = new Vector3(0, 1, 0);
-
+    //yaw
+    private double hAngle; 
+    //pitch
+    private double vAngle; 
     //clippy plains
-    double near = 0.1;
+    double near = 0.01;
     double far = 10000;
-    Camera(double x, double y, double z, Vector3 pointingAt) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.pointingAt = pointingAt;
+    private double renderPlaneDistance = 50;
+    
+
+    private double renderPlaneWidth;
+    Camera(Vector3 p, double f) {
+        hAngle = 0;
+        vAngle = 0;
+        position = p;
+        directionVector = Vector3.angleToVector(hAngle, vAngle);
+        setFov(f);
+        directionVector = Vector3.angleToVector(hAngle, vAngle);
     }
     //this needs the screen width and height to calculate the aspect ratio :)
     public Matrix calculateProjectionMatrix(double sw, double sh) {
@@ -27,63 +34,54 @@ public class Camera {
         };
         return new Matrix(projectionMatrix);
     }
+    public void setFov(double fovIn)
+    {
+        fov = Math.toRadians(fovIn);
+        //calculates a bespoke value based on the FOV
+        renderPlaneWidth = Math.tan(fov/2)*renderPlaneDistance*2;
+    }
     //for this method, i have decided to use double[] instead of Vector3, for convience accessing values
-    public Matrix calculateViewMatrix() {
-        
-        double[] eye = {x, y, z};
-
-        // Target position 
-        double[] target = {pointingAt.x, pointingAt.y, pointingAt.z};
-
-        // Up vector 
-        double[] up = {this.up.x, this.up.y, this.up.z};
-
-        
-        double[] forward = BigUtils.normalize(BigUtils.subtract(target, eye));
-        double[] right = BigUtils.normalize(BigUtils.cross(up, forward));
-        double[] trueUp = BigUtils.cross(forward, right);
-
-        
-        Matrix rotation = new Matrix(new double[][] {
-            {right[0], right[1], right[2], 0},
-            {trueUp[0], trueUp[1], trueUp[2], 0},
-            {-forward[0], -forward[1], -forward[2], 0},
-            {0, 0, 0, 1}
-        });
-
-        Matrix translation = new Matrix(new double[][] {
-            {1, 0, 0, -eye[0]},
-            {0, 1, 0, -eye[1]},
-            {0, 0, 1, -eye[2]},
-            {0, 0, 0, 1}
-        });
-        // System.out.println("translation dimentions: "+"("+translation.rows+", "+translation.columns+")");
-        // translation.display();
-
-        // erm... 🤓 here goes nothing ☝️
-        Matrix result = rotation.multiply(translation);
-        //result.display();
-        return result;
+    public void translate(Vector3 t) {
+        position = position.add(t);
     }
-    public void translate(double x, double y, double z) {
-        this.x+=x;
-        this.y+=y;
-        this.z+=z;
-        pointingAt.x +=x;
-        pointingAt.y+=y;
-        pointingAt.z+=z;
+    public void lookAt(Vector3 pos)
+    {
+        hAngle = (pos.x-position.x < 0)? -Math.atan((pos.z-position.z)/(pos.x-position.x))-Math.PI/2 : Math.PI/2-Math.atan((pos.z-position.z)/(pos.x-position.x));
+
+        vAngle = Math.atan((pos.y-position.y)/(Math.sqrt((pos.x-position.x)*(pos.x-position.x) + (pos.z-position.z)*(pos.z-position.z))));
+        
+        hAngle%=Math.PI;
+        vAngle%=Math.PI;
+        directionVector = Vector3.angleToVector(hAngle, vAngle);
     }
-    
-    public void translate(Vector3 v) {
-        this.x+=v.x;
-        this.y+=v.y;
-        this.z+=v.z;
-        pointingAt.x +=v.x;
-        pointingAt.y+=v.y;
-        pointingAt.z+=v.z;
+    public static double dotProduct(Vector3 a, Vector3 b)
+    {
+        return a.x*b.x+a.y*b.y+a.z*b.z;
+    }
+    public static Vector3 crossProduct(Vector3 a, Vector3 b)
+    {
+        return new Vector3(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x);
+    }
+    public double getRenderPlaneWidth(){
+        return renderPlaneWidth;
     }
     @Override
     public String toString() {
-        return "(" + x + ", " + y + ", " + z + ")";
+        return position.toString();
+    }
+    public Vector3 getDirectionVector() {
+        return directionVector;
+    }
+    public double getHorientation()
+    {
+        return hAngle;
+    }
+
+    public double getVorientation()
+    {
+        return vAngle;
+    }
+    public double getRenderPlaneDistance() {
+        return renderPlaneDistance;
     }
 }

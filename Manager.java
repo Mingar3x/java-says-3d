@@ -12,6 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.util.Random;
 import javax.swing.Timer;
+
 import java.util.ArrayList; 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +32,15 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     int screenHeight = (int)size.getHeight();
     int screenCenterWidth = screenWidth/2;
     int screenCenterHeight = screenHeight/2;    
-
-    Matrix projectionMatrix; //projection matrix, duh 
+    private double maxTriangleDistance;
+    private double minTriangleDistance;
+    private double pixelsPerUnit;
+    private Vector3 camDirection;
+    private double renderPlaneWidth;
+    private Plane renderPlane;
+    Matrix projectionMatrix; //projection matrix, duh
+    private Quaternion pointRotationQuaternion;
+    private Vector3 camCenterPoint;
     
     Camera c; //camera object, will be initalized in initalizeScreen()
 
@@ -63,8 +71,17 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     //
     //by the rivers of babyleon
     public void paintComponent(Graphics g) {
+        maxTriangleDistance = 0;
+        minTriangleDistance = c.far;
+        pixelsPerUnit = getWidth()/renderPlaneWidth;
+        renderPlaneWidth = c.getRenderPlaneWidth();
+        camDirection = c.getDirectionVector();
+        camCenterPoint = Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.position);
+        renderPlane = new Plane(Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.position), camDirection);
+        pointRotationQuaternion = createRotationQuaternion(c.getVorientation(), -c.getHorientation());
+        
         //calculating camera matrix
-        Matrix viewMatrix = c.calculateViewMatrix();
+        //Matrix viewMatrix = c.calculateViewMatrix();
         Graphics2D g2 = (Graphics2D) g;
 
         g2.setColor(Color.GREEN);
@@ -85,14 +102,14 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
             VertexPool value = entry.vertexPool;
             for (Vector3 v : value.sharedVertices) {
 
-                //make matrix from the vertex
                 double[][] vertexArray = {{v.x},{v.y},{v.z},{1}};
                 Matrix vertexMatrix = new Matrix(vertexArray);
 
-                //applying view matrix
+                //view matrix
                 Matrix viewCorrectedMatrix = viewMatrix.multiply(vertexMatrix);
                 
-                //projecting each vertex
+                //projecting matrix
+                //i don't think this is doing the right thing :(
                 Matrix projectedMatrix = projectionMatrix.multiply(viewCorrectedMatrix);
 
                 //homogenous division, this method returns an array with 3 axles
@@ -108,7 +125,8 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 
 
                 v.toNewPosition(ssv3.x, ssv3.y, ssv3.z);
-                //System.out.println(v.x+", "+v.y);
+                //
+                System.out.println(v.x+", "+v.y);
                 g2.setColor(Color.BLACK);
                 g2.fillRect((int)v.x,(int)v.y,5,5);
             }
@@ -132,7 +150,8 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     }
     public void initalizeScreen(){
         // yo so this ↓↓ is the camera
-        c = new Camera(0, 0, 1, new Vector3(0, 0, 0));
+        Camera c = new Camera(new Vector3(1,1,1),90);
+        renderPlaneWidth = c.getRenderPlaneWidth();
         projectionMatrix = c.calculateProjectionMatrix(screenWidth, screenHeight);
         
         geo.makeStaticPlane(-5,5,5,-5,-5,-5,Color.PINK,Color.ORANGE);
@@ -149,27 +168,90 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     public void keyTyped(KeyEvent e) { 
         //Hey! I'm not implemented! Fix that!
     }
+    private void calculateTriangle(Triangle triangle)
+    {
+        Vector3 triangleCenter = triangle.getCenter();
+        double distanceToTriangle = Vector3.subtract(triangleCenter, c.position).getMagnitude(); 
+        if (distanceToTriangle > maxTriangleDistance)
+            maxTriangleDistance = distanceToTriangle;
+        else if (distanceToTriangle < minTriangleDistance)
+            minTriangleDistance = distanceToTriangle;
+        if 
+        (
+            Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0 //is the triangle behind the camera?
+            || distanceToTriangle >= c.far //is the triangle too far away?
+            || distanceToTriangle <= c.near //is the triangle too close?
+        ){
+            return;
+            //if the trianle meets one of the above contitions it is not eligable for rendering at this time
+        }
+           
+        //clone the triangle's vertices:
+        Vector3 triangleVertex1 = triangle.v1.clone();
+        Vector3 triangleVertex2 = triangle.v2.clone();
+        Vector3 triangleVertex3 = triangle.v3.clone();
+        //the screen coords of the triangle, to be determined by the rest of the method.
+        Point p1ScreenCoords = new Point();
+        Point p2ScreenCoords = new Point();
+        Point p3ScreenCoords = new Point();
+        //will be set true if atleast one of the verticies is in camera's view. 
+        boolean shouldDrawTriangle = false;
+
+        //get intersection with render plane 
+        triangleVertex1 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex1, c.position), c.position, renderPlane);
+
+        //rotate the point: 
+        triangleVertex1 = Vector3.rotate(Vector3.subtract(triangleVertex1, camCenterPoint), pointRotationQuaternion);
+
+        //check if it's in the fov
+        if ((Math.abs(triangleVertex1.x) < renderPlaneWidth/2*1.2 && Math.abs(triangleVertex1.y) < renderPlaneWidth*((double)getHeight()/(double)getWidth())/2))
+            shouldDrawTriangle = true;
+
+        //scale to the screen coordinates
+        p1ScreenCoords.x = (int)(getWidth()/2 + triangleVertex1.x*pixelsPerUnit);
+        p1ScreenCoords.y = (int)(getHeight()/2 - triangleVertex1.y*pixelsPerUnit);
+
+        //repeat for each of the other two vertices
+        triangleVertex2 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex2, c.position), c.position, renderPlane);
+        triangleVertex2 = Vector3.rotate(Vector3.subtract(triangleVertex2, camCenterPoint), pointRotationQuaternion);
+        if ((Math.abs(triangleVertex2.x) < renderPlaneWidth/2 && Math.abs(triangleVertex2.y) < renderPlaneWidth*((double)getHeight()/getWidth())/2))
+            shouldDrawTriangle = true;
+        p2ScreenCoords.x = (int)(getWidth()/2 + triangleVertex2.x*pixelsPerUnit);
+        p2ScreenCoords.y = (int)(getHeight()/2 - triangleVertex2.y*pixelsPerUnit);
+
+        triangleVertex3 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex3, c.position), c.position, renderPlane);
+        triangleVertex3 = Vector3.rotate(Vector3.subtract(triangleVertex3, camCenterPoint), pointRotationQuaternion);
+        if ((Math.abs(triangleVertex3.x) < renderPlaneWidth/2 && Math.abs(triangleVertex3.y) < renderPlaneWidth*((double)getHeight()/getWidth())/2))
+            shouldDrawTriangle = true;
+        p3ScreenCoords.x = (int)(getWidth()/2 + triangleVertex3.x*pixelsPerUnit);
+        p3ScreenCoords.y = (int)(getHeight()/2 - triangleVertex3.y*pixelsPerUnit);
+
+    
+        if (shouldDrawTriangle){
+            //TODO
+        }
+    }
 
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode(); // Get the virtual key code
                 switch (keyCode) {
                     case KeyEvent.VK_W:
-                        c.translate(0,-50,0);
+                        c.translate(new Vector3(0,-50,0));
                         break;
                     case KeyEvent.VK_A:
-                    c.translate(50,0,0);
+                    c.translate(new Vector3(50,0,0));
                         break;
                     case KeyEvent.VK_S:
-                    c.translate(0,50,0);
+                    c.translate(new Vector3(0,50,0));
                         break;
                     case KeyEvent.VK_D:
-                    c.translate(0,50,0);
+                    c.translate(new Vector3(0,50,0));
                         break;
                     case KeyEvent.VK_SPACE:
-                    c.translate(0,0,50);
+                    c.translate(new Vector3(0,0,50));
                         break;
                     case KeyEvent.VK_SHIFT:
-                        c.translate(0,0,-50);
+                        c.translate(new Vector3(0,0,-50));
                         break;
                     case KeyEvent.VK_ESCAPE:
                         System.out.println("Exit game!");
