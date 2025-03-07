@@ -11,8 +11,6 @@ public class Camera {
     double near = 0.01;
     double far = 10000;
     private double renderPlaneDistance = 50;
-    
-
     private double renderPlaneWidth;
     Camera(Vector3 p, double f) {
         hAngle = 0;

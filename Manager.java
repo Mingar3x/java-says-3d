@@ -89,7 +89,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
 
         g2.setColor(Color.GREEN);
         g2.fillRect(0, 0, getWidth(), getHeight()); //fill the screen with black, 
-        g2.translate(getWidth() / 2, getHeight() / 2); //then center the image
+       // g2.translate(getWidth() / 2, getHeight() / 2); //then center the image
 
         //resetting the screen space buffer map thing
         screenSpaceMap = new ArrayList<Triangle>();
@@ -120,8 +120,8 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     }
     public void initalizeScreen(){
         // yo so this ↓↓ is the camera
-        c = new Camera(new Vector3(1,1,1),180);
-        c.lookAt(new Vector3(1,0,1));
+        c = new Camera(new Vector3(0,0,0),90);
+        c.lookAt(new Vector3(0,0,1));
         renderPlaneWidth = c.getRenderPlaneWidth();        
         geo.makeStaticPlane(-5,5,5,-5,-5,-5,Color.PINK,Color.ORANGE);
         geo.makeStaticPlane(-50,50,50,-50,-50,-50,Color.RED,Color.BLUE);
@@ -134,6 +134,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     public void keyTyped(KeyEvent e) { 
         //Hey! I'm not implemented! Fix that!
     }
+    
     private void triToScreen(Triangle triangle)
     {
         Vector3 triangleCenter = triangle.getCenter();
@@ -142,16 +143,19 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
             maxTriangleDistance = distanceToTriangle;
         else if (distanceToTriangle < minTriangleDistance)
             minTriangleDistance = distanceToTriangle;
-        if 
-        (
-            Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0 //is the triangle behind the camera?
-            || distanceToTriangle >= c.far //is the triangle too far away?
-            || distanceToTriangle <= c.near //is the triangle too close?
-        ){
-            System.out.println("skipped a triangle");
-            return;
-            //if the trianle meets one of the above contitions it is not eligable for rendering at this time
-        }
+        // if 
+        // (
+        //     Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0 //is the triangle behind the camera?
+        //     || distanceToTriangle >= c.far //is the triangle too far away?
+        //     || distanceToTriangle <= c.near //is the triangle too close?
+        // ){
+        //     System.out.println("skipped a triangle");
+        //     System.out.println("near plane error:"+(distanceToTriangle <= c.near));
+        //     System.out.println("far plane error:"+(distanceToTriangle >= c.far));
+        //     System.out.println("behind camera error:"+(Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0));
+        //     return;
+        //     //if the trianle meets one of the above contitions it is not eligable for rendering at this time
+        // }
            
         //clone the triangle's vertices:
         Vector3 triangleVertex1 = triangle.v1.clone();
@@ -178,7 +182,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         p1ScreenCoords.x = (int)(getWidth()/2 + triangleVertex1.x*pixelsPerUnit);
         p1ScreenCoords.y = (int)(getHeight()/2 - triangleVertex1.y*pixelsPerUnit);
 
-        //repeat for each of the other two vertices
+        //repeat for other two
         triangleVertex2 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex2, c.position), c.position, renderPlane);
         triangleVertex2 = Vector3.rotate(Vector3.subtract(triangleVertex2, camCenterPoint), pointRotationQuaternion);
         if ((Math.abs(triangleVertex2.x) < renderPlaneWidth/2 && Math.abs(triangleVertex2.y) < renderPlaneWidth*((double)getHeight()/getWidth())/2))
