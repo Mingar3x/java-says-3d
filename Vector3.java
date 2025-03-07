@@ -1,3 +1,5 @@
+import java.util.Vector;
+
 public class Vector3 {
     public double x;
     public double y;
@@ -69,5 +71,26 @@ public class Vector3 {
     public double getSqrMagnitude()
     {
         return x*x+z*z+y*y;
+    }
+    public static Vector3 rotate(Vector3 v, Quaternion q)
+    {
+        final double w = -(q.x*v.x+q.y*v.y+q.z*v.z);
+        final double x = q.w*v.x + q.y*v.z-q.z*v.y;
+        final double y = q.w*v.y + q.z*v.x-q.x*v.z;
+        final double z = q.w*v.z + q.x*v.y-q.y*v.x;
+
+        return new Vector3
+        (
+            q.w*x - w*q.x - y*q.z + z*q.y,
+            q.w*y - w*q.y - z*q.x + x*q.z,
+            q.w*z - w*q.z - x*q.y + y*q.x
+        );
+    }
+    //gets the distance between two points as a double, duh
+    public static double getDiagonalDistance(Vector3 a, Vector3 b){
+        double dx = b.x - a.x;
+        double dy = b.y - a.y;
+        double dz = b.z - a.z;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 }

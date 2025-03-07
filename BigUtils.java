@@ -40,28 +40,17 @@ public class BigUtils {
         };
     }
 
-    //yes this method is basically the same as the one in the Matrix class, but this one is static
-    //also this one doesn't really work so dont use it.  just dont use this.
-    public static Matrix multiplyMatrices(Matrix A, Matrix B) {
-        int aRows = A.getRows();
-        int aCols = A.getColumns();
-        int bRows = B.getRows();
-        int bCols = B.getColumns();
+    public static Quaternion createRotationQuaternion(double pitch, double yaw)
+    {
+        //x axis rotation first
+        pitch = Math.sin(pitch/2);
+        double w1 = Math.sqrt(1-pitch*pitch);
 
-        if (aCols != bRows) {
-            throw new IllegalArgumentException("BEEP BEEP BEEP THESE MATRICES CANT BE MULTLIPLIETed");
-        }
+        //y axis rotation
+        yaw = Math.sin(yaw/2);
+        double w2 = Math.sqrt(1-yaw*yaw);
 
-        double[][] result = new double[aRows][bCols];
-
-        for (int i = 0; i < aRows; i++) {
-            for (int j = 0; j < bCols; j++) {
-                for (int k = 0; k < aCols; k++) {
-                    result[i][j] += A.get(i, k) * B.get(k, j);
-                }
-            }
-        }
-        return new Matrix(result);
+        return new Quaternion(w1*w2, w2*pitch, w1*yaw, pitch*yaw);  
     }
     
 }

@@ -22,4 +22,6 @@ public class Triangle {
             (v1.z + v2.z + v3.z)/3
         );
     }
+
+    //HEY! Don't use these methods for the wrong thing!!!!! soooo... DONT DO IT!!
 }

@@ -22,25 +22,13 @@ public class Camera {
         setFov(f);
         directionVector = Vector3.angleToVector(hAngle, vAngle);
     }
-    //this needs the screen width and height to calculate the aspect ratio :)
-    public Matrix calculateProjectionMatrix(double sw, double sh) {
-        double aspectRatio = sw / sh;
-        double f = 1 / Math.tan(Math.toRadians(fov) / 2);
-        double[][] projectionMatrix = {
-            {f / aspectRatio, 0, 0, 0},
-            {0, f, 0, 0},
-            {0, 0, (far + near) / (near - far), (2 * far * near) / (near - far)},
-            {0, 0, -1, 0}
-        };
-        return new Matrix(projectionMatrix);
-    }
     public void setFov(double fovIn)
     {
         fov = Math.toRadians(fovIn);
         //calculates a bespoke value based on the FOV
         renderPlaneWidth = Math.tan(fov/2)*renderPlaneDistance*2;
     }
-    //for this method, i have decided to use double[] instead of Vector3, for convience accessing values
+
     public void translate(Vector3 t) {
         position = position.add(t);
     }

@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-//this ↓↓ makes the angry yellows go away :) 
 //@SuppressWarnings("unused")
 
 public class Manager extends JPanel implements KeyListener , MouseMotionListener {
@@ -38,7 +37,6 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     private Vector3 camDirection;
     private double renderPlaneWidth;
     private Plane renderPlane;
-    Matrix projectionMatrix; //projection matrix, duh
     private Quaternion pointRotationQuaternion;
     private Vector3 camCenterPoint;
     
@@ -46,7 +44,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
 
     //VertexPool will not work for moving vertices, probably
     static ArrayList<GeometryGroup> staticMeshMap = new ArrayList<>();
-
+    ArrayList<Triangle> screenSpaceMap = new ArrayList<>(); //used to store transformed triangles to render
 
     //constructor
     private Manager() {
@@ -68,9 +66,16 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         gameTimer.start();
     }
     //this ↓↓ is the drawing method that is called every frame
-    //
     //by the rivers of babyleon
     public void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+
+        if (c==null){ //if the camera for some reason won't load, the screen goes grey until it does
+            g2.setColor(Color.GRAY);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            return;
+        }
+
         maxTriangleDistance = 0;
         minTriangleDistance = c.far;
         pixelsPerUnit = getWidth()/renderPlaneWidth;
@@ -78,64 +83,29 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         camDirection = c.getDirectionVector();
         camCenterPoint = Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.position);
         renderPlane = new Plane(Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.position), camDirection);
-        pointRotationQuaternion = createRotationQuaternion(c.getVorientation(), -c.getHorientation());
+        pointRotationQuaternion = BigUtils.createRotationQuaternion(c.getVorientation(), -c.getHorientation());
         
-        //calculating camera matrix
-        //Matrix viewMatrix = c.calculateViewMatrix();
-        Graphics2D g2 = (Graphics2D) g;
+        
 
         g2.setColor(Color.GREEN);
-        g2.fillRect(0, 0, getWidth(), getHeight()); //fill the screen with black, then
-        g2.translate(getWidth() / 2, getHeight() / 2);          //center the image
+        g2.fillRect(0, 0, getWidth(), getHeight()); //fill the screen with black, 
+        g2.translate(getWidth() / 2, getHeight() / 2); //then center the image
 
-        //this converts the worldspace hashmap into a temporary screen space hashmap
-        //recalculated each frame
-        ArrayList<GeometryGroup> screenSpaceMap = new ArrayList<>();
-        
-        for (GeometryGroup gee : staticMeshMap) {
-            //reset the screenSpaceMap each frame, not super efficent, but whatever
-            screenSpaceMap.add(gee.clone());
-        }
-        //applying the projection matrix and view matrix to each vertex
-        //basicly moving it from world space to screen space
-        for (GeometryGroup entry : screenSpaceMap) { 
-            VertexPool value = entry.vertexPool;
-            for (Vector3 v : value.sharedVertices) {
+        //resetting the screen space buffer map thing
+        screenSpaceMap = new ArrayList<Triangle>();
 
-                double[][] vertexArray = {{v.x},{v.y},{v.z},{1}};
-                Matrix vertexMatrix = new Matrix(vertexArray);
-
-                //view matrix
-                Matrix viewCorrectedMatrix = viewMatrix.multiply(vertexMatrix);
-                
-                //projecting matrix
-                //i don't think this is doing the right thing :(
-                Matrix projectedMatrix = projectionMatrix.multiply(viewCorrectedMatrix);
-
-                //homogenous division, this method returns an array with 3 axles
-                double[] ScSpArray = BigUtils.to3D(new double[]{
-                    projectedMatrix.get(0, 0), 
-                    projectedMatrix.get(1, 0), 
-                    projectedMatrix.get(2, 0), 
-                    projectedMatrix.get(3, 0)});
-                
-                Matrix ScSpMatrix = new Matrix(new double[][]{{ScSpArray[0], ScSpArray[1], ScSpArray[2],1}});
-                //ScSpMatrix.display();
-                Vector3 ssv3 = new Vector3(ScSpArray[0], ScSpArray[1], ScSpArray[2]);
-                
-
-                v.toNewPosition(ssv3.x, ssv3.y, ssv3.z);
-                //
-                System.out.println(v.x+", "+v.y);
-                g2.setColor(Color.BLACK);
-                g2.fillRect((int)v.x,(int)v.y,5,5);
+        //for each triangle, move it to screen space.
+        for (GeometryGroup entry : staticMeshMap) { 
+            TriangleGroup value = entry.triangleGroup;
+            for (Triangle t : value.triangles) {
+                triToScreen(t);
             }
         }
 
-        //this is NOT the right way to rasterize polygons!!!! :( FIX LATER!!!!!!
-        for (GeometryGroup entry : screenSpaceMap) { 
-            TriangleGroup value = entry.triangleGroup;
-            for(Triangle t: value.triangles){
+        //TODO
+        //DOES NOT WORK!!!
+        int ix = 0;
+        for (Triangle t : screenSpaceMap) { 
                 Path2D.Double path = new Path2D.Double();
                 path.moveTo(t.v1.x, t.v1.y);
                 path.lineTo(t.v2.x, t.v2.y);
@@ -144,21 +114,17 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 path.closePath();
                 g2.setColor(t.color);
                 g2.fill(path);
-            }
+                ix++;
+                System.out.println("Triangle #"+ix+" has been drawn.");
          }
-        System.out.println(c);
     }
     public void initalizeScreen(){
         // yo so this ↓↓ is the camera
-        Camera c = new Camera(new Vector3(1,1,1),90);
-        renderPlaneWidth = c.getRenderPlaneWidth();
-        projectionMatrix = c.calculateProjectionMatrix(screenWidth, screenHeight);
-        
+        c = new Camera(new Vector3(1,1,1),180);
+        c.lookAt(new Vector3(1,0,1));
+        renderPlaneWidth = c.getRenderPlaneWidth();        
         geo.makeStaticPlane(-5,5,5,-5,-5,-5,Color.PINK,Color.ORANGE);
         geo.makeStaticPlane(-50,50,50,-50,-50,-50,Color.RED,Color.BLUE);
-    }
-    public Vector3 toRealScreenSpace(Vector3 v){
-        return new Vector3((2 * v.x)/screenWidth, (2 * v.y)/screenHeight, v.z);
     }
     public void gameTick() {
         //other calculations and whatnot
@@ -168,7 +134,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     public void keyTyped(KeyEvent e) { 
         //Hey! I'm not implemented! Fix that!
     }
-    private void calculateTriangle(Triangle triangle)
+    private void triToScreen(Triangle triangle)
     {
         Vector3 triangleCenter = triangle.getCenter();
         double distanceToTriangle = Vector3.subtract(triangleCenter, c.position).getMagnitude(); 
@@ -182,6 +148,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
             || distanceToTriangle >= c.far //is the triangle too far away?
             || distanceToTriangle <= c.near //is the triangle too close?
         ){
+            System.out.println("skipped a triangle");
             return;
             //if the trianle meets one of the above contitions it is not eligable for rendering at this time
         }
@@ -228,7 +195,11 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
 
     
         if (shouldDrawTriangle){
-            //TODO
+            Triangle screenTri = new Triangle(new Vector3(p1ScreenCoords.x, p1ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex1, c.position)),
+            new Vector3(p2ScreenCoords.x, p2ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex2, c.position)),
+            new Vector3(p3ScreenCoords.x, p3ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex3, c.position)), 
+            triangle.color);
+            screenSpaceMap.add(screenTri);
         }
     }
 
