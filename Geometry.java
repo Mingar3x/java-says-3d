@@ -21,4 +21,15 @@ public class Geometry {
         Manager.staticMeshMap.add(new GeometryGroup(vp, tg));
 
     }
+    public void makePrism(double x1, double x2, double y1, double y2, double z1, double z2){
+        //TODO NOT FINISHED!!!
+        Color c1 = Color.GREEN;
+        Color c2 = Color.WHITE;
+        VertexPool vp = new VertexPool();
+        TriangleGroup tg = new TriangleGroup(new ArrayList<Triangle>());
+        Vector3 topleft = vp.getSharedVertex(new Vector3(x1, y1, z1));
+        Vector3 bottomright = vp.getSharedVertex(new Vector3(x2, y2, z2));
+        
+        Manager.staticMeshMap.add(new GeometryGroup(vp, tg));
+    }
 }

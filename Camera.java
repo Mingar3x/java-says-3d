@@ -12,6 +12,8 @@ public class Camera {
     double far = 10000;
     private double renderPlaneDistance = 50;
     private double renderPlaneWidth;
+    private double lastMouseX = 0;
+    private double lastMouseY = 0;
     Camera(Vector3 p, double f) {
         hAngle = 0;
         vAngle = 0;
@@ -39,6 +41,23 @@ public class Camera {
         hAngle%=Math.PI;
         vAngle%=Math.PI;
         directionVector = Vector3.angleToVector(hAngle, vAngle);
+    }
+    public void updateOrientation(double mouseX, double mouseY, double sensitivity) {
+        double mouseDeltaX = mouseX- lastMouseX;
+        double mouseDeltaY = mouseY- lastMouseY;
+        hAngle += mouseDeltaX * sensitivity; // Adjust the yaw based on the mouse's horizontal movement
+        vAngle -= mouseDeltaY * sensitivity; // Adjust the pitch based on the mouse's vertical movement
+
+        // clamp ing
+        if (vAngle > Math.PI / 2) {
+            vAngle = Math.PI / 2;
+        } else if (vAngle < -Math.PI / 2) {
+            vAngle = -Math.PI / 2;
+        }
+
+        directionVector = Vector3.angleToVector(hAngle, vAngle);
+        lastMouseX = mouseX;
+        lastMouseY= mouseY;
     }
     public static double dotProduct(Vector3 a, Vector3 b)
     {

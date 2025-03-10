@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class Manager extends JPanel implements KeyListener , MouseMotionListener {
     private JFrame myFrame;
-    private double mouseSensitivity=1.0;
+    private double mouseSensitivity=0.01;
     private int timeBetweenGameTicks = 100; //milliseconds
     private Random r = new Random();
     Geometry geo = new Geometry();//geometry.java instance
@@ -121,7 +121,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     public void initalizeScreen(){
         // yo so this ↓↓ is the camera
         c = new Camera(new Vector3(0,0,0),90);
-        c.lookAt(new Vector3(0,0,1));
+        c.lookAt(new Vector3(0,1,-1));
         renderPlaneWidth = c.getRenderPlaneWidth();        
         geo.makeStaticPlane(-5,5,5,-5,-5,-5,Color.PINK,Color.ORANGE);
         geo.makeStaticPlane(-50,50,50,-50,-50,-50,Color.RED,Color.BLUE);
@@ -171,18 +171,18 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         //get intersection with render plane 
         triangleVertex1 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex1, c.position), c.position, renderPlane);
 
-        //rotate the point: 
+        //rotate the point
         triangleVertex1 = Vector3.rotate(Vector3.subtract(triangleVertex1, camCenterPoint), pointRotationQuaternion);
 
-        //check if it's in the fov
+        //check if it's in fov
         if ((Math.abs(triangleVertex1.x) < renderPlaneWidth/2*1.2 && Math.abs(triangleVertex1.y) < renderPlaneWidth*((double)getHeight()/(double)getWidth())/2))
             shouldDrawTriangle = true;
 
-        //scale to the screen coordinates
+        //scale to  screen coord
         p1ScreenCoords.x = (int)(getWidth()/2 + triangleVertex1.x*pixelsPerUnit);
         p1ScreenCoords.y = (int)(getHeight()/2 - triangleVertex1.y*pixelsPerUnit);
 
-        //repeat for other two
+        //repeat for other points
         triangleVertex2 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex2, c.position), c.position, renderPlane);
         triangleVertex2 = Vector3.rotate(Vector3.subtract(triangleVertex2, camCenterPoint), pointRotationQuaternion);
         if ((Math.abs(triangleVertex2.x) < renderPlaneWidth/2 && Math.abs(triangleVertex2.y) < renderPlaneWidth*((double)getHeight()/getWidth())/2))
@@ -197,7 +197,6 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         p3ScreenCoords.x = (int)(getWidth()/2 + triangleVertex3.x*pixelsPerUnit);
         p3ScreenCoords.y = (int)(getHeight()/2 - triangleVertex3.y*pixelsPerUnit);
 
-    
         if (shouldDrawTriangle){
             Triangle screenTri = new Triangle(new Vector3(p1ScreenCoords.x, p1ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex1, c.position)),
             new Vector3(p2ScreenCoords.x, p2ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex2, c.position)),
@@ -211,13 +210,13 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         int keyCode = e.getKeyCode(); // Get the virtual key code
                 switch (keyCode) {
                     case KeyEvent.VK_W:
-                        c.translate(new Vector3(0,-50,0));
+                        c.translate(new Vector3(50,0,0));
                         break;
                     case KeyEvent.VK_A:
-                    c.translate(new Vector3(50,0,0));
+                    c.translate(new Vector3(0,-50,0));
                         break;
                     case KeyEvent.VK_S:
-                    c.translate(new Vector3(0,50,0));
+                    c.translate(new Vector3(-50,0,0));
                         break;
                     case KeyEvent.VK_D:
                     c.translate(new Vector3(0,50,0));
@@ -245,7 +244,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         //System.out.println("hi"); 
 }
     public void mouseMoved(MouseEvent e) {
-        //nothing doing, buster
+        c.updateOrientation(e.getX(), e.getY(), mouseSensitivity);
         myFrame.repaint();
     }
     public static void main(String[] args) {
