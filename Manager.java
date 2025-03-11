@@ -7,21 +7,19 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 
-
+import javax.swing.*;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.util.Random;
 import javax.swing.Timer;
 
 import java.util.ArrayList; 
-import java.util.HashMap;
-import java.util.Map;
 
 //@SuppressWarnings("unused")
 
 public class Manager extends JPanel implements KeyListener , MouseMotionListener {
     private JFrame myFrame;
-    private double mouseSensitivity=0.01;
+    private double mouseSensitivity=0.001;
     private int timeBetweenGameTicks = 100; //milliseconds
     private Random r = new Random();
     Geometry geo = new Geometry();//geometry.java instance
@@ -39,6 +37,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     private Plane renderPlane;
     private Quaternion pointRotationQuaternion;
     private Vector3 camCenterPoint;
+    public Robot robot;
     
     Camera c; //camera object, will be initalized in initalizeScreen()
 
@@ -49,7 +48,10 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     //constructor
     private Manager() {
         myFrame = new JFrame("Game!");
-        
+        try
+        {robot = new Robot();} 
+        catch (AWTException e){e.printStackTrace();}
+        //robot = new Robot();
         myFrame.add(this);
         this.addKeyListener(this);
         this.addMouseMotionListener(this);
@@ -69,6 +71,12 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     //by the rivers of babyleon
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
+
+        //reseting the cursor to the center of the screen (every frame)
+        Point center = myFrame.getLocationOnScreen();
+        int x = center.x + myFrame.getWidth() / 2;
+        int y = center.y + myFrame.getHeight() / 2;
+        robot.mouseMove(x, y);
 
         if (c==null){ //if the camera for some reason won't load, the screen goes grey until it does
             g2.setColor(Color.GRAY);
@@ -125,6 +133,10 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         renderPlaneWidth = c.getRenderPlaneWidth();        
         geo.makeStaticPlane(-5,5,5,-5,-5,-5,Color.PINK,Color.ORANGE);
         geo.makeStaticPlane(-50,50,50,-50,-50,-50,Color.RED,Color.BLUE);
+        myFrame.setCursor( myFrame.getToolkit().createCustomCursor(
+                   new BufferedImage( 1, 1, BufferedImage.TYPE_INT_ARGB ),
+                   new Point(),
+                   null ) );
     }
     public void gameTick() {
         //other calculations and whatnot
@@ -143,19 +155,19 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
             maxTriangleDistance = distanceToTriangle;
         else if (distanceToTriangle < minTriangleDistance)
             minTriangleDistance = distanceToTriangle;
-        // if 
-        // (
-        //     Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0 //is the triangle behind the camera?
-        //     || distanceToTriangle >= c.far //is the triangle too far away?
-        //     || distanceToTriangle <= c.near //is the triangle too close?
-        // ){
-        //     System.out.println("skipped a triangle");
-        //     System.out.println("near plane error:"+(distanceToTriangle <= c.near));
-        //     System.out.println("far plane error:"+(distanceToTriangle >= c.far));
-        //     System.out.println("behind camera error:"+(Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0));
-        //     return;
-        //     //if the trianle meets one of the above contitions it is not eligable for rendering at this time
-        // }
+        if 
+        (
+            Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0 //is the triangle behind the camera?
+            || distanceToTriangle >= c.far //is the triangle too far away?
+            || distanceToTriangle <= c.near //is the triangle too close?
+        ){
+            System.out.println("skipped a triangle");
+            System.out.println("near plane error:"+(distanceToTriangle <= c.near));
+            System.out.println("far plane error:"+(distanceToTriangle >= c.far));
+            System.out.println("behind camera error:"+(Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0));
+            return;
+            //if the trianle meets one of the above contitions it is not eligable for rendering at this time
+        }
            
         //clone the triangle's vertices:
         Vector3 triangleVertex1 = triangle.v1.clone();
