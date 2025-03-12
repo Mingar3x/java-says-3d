@@ -43,10 +43,10 @@ public class Camera {
         directionVector = Vector3.angleToVector(hAngle, vAngle);
     }
     public void updateOrientation(double mouseX, double mouseY, double sensitivity) {
-        double mouseDeltaX = mouseX- lastMouseX;
-        double mouseDeltaY = mouseY- lastMouseY;
-        hAngle += mouseDeltaX * sensitivity; // Adjust the yaw based on the mouse's horizontal movement
-        vAngle -= mouseDeltaY * sensitivity; // Adjust the pitch based on the mouse's vertical movement
+        //double mouseDeltaX = mouseX- lastMouseX;
+        //double mouseDeltaY = mouseY- lastMouseY;
+        hAngle += mouseX * sensitivity; // Adjust the yaw based on the mouse's horizontal movement
+        vAngle -= mouseY * sensitivity; // Adjust the pitch based on the mouse's vertical movement
 
         // clamp ing
         if (vAngle > Math.PI / 2) {
@@ -58,6 +58,7 @@ public class Camera {
         directionVector = Vector3.angleToVector(hAngle, vAngle);
         lastMouseX = mouseX;
         lastMouseY= mouseY;
+        System.out.println("New Rotation! New camera rotation is ("+vAngle+", "+hAngle+")");
     }
     public static double dotProduct(Vector3 a, Vector3 b)
     {
