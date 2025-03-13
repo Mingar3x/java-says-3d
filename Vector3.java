@@ -38,9 +38,11 @@ public class Vector3 {
     {
         return a.x*b.x+a.y*b.y+a.z*b.z;
     }
-    public Vector3 add(Vector3 vectorIn)
+    public void add(Vector3 vectorIn)
     {
-        return Vector3.add(this, vectorIn);
+        x = Vector3.add(this, vectorIn).x;
+        y = Vector3.add(this, vectorIn).y;
+        z = Vector3.add(this, vectorIn).z;
     }
     public static Vector3 add(Vector3 a, Vector3 b)
     {
@@ -92,5 +94,8 @@ public class Vector3 {
         double dy = b.y - a.y;
         double dz = b.z - a.z;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+    public Vector3 getPosition(){
+        return this;
     }
 }

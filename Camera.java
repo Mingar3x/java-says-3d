@@ -1,5 +1,4 @@
-public class Camera {
-    public Vector3 position;
+public class Camera extends Vector3{
     private Vector3 directionVector; 
     public double fov = 90;
     public Vector3 up = new Vector3(0, 1, 0);
@@ -15,9 +14,9 @@ public class Camera {
     private double lastMouseX = 0;
     private double lastMouseY = 0;
     Camera(Vector3 p, double f) {
+        super(p.x,p.y,p.z);
         hAngle = 0;
         vAngle = 0;
-        position = p;
         directionVector = Vector3.angleToVector(hAngle, vAngle);
         setFov(f);
         directionVector = Vector3.angleToVector(hAngle, vAngle);
@@ -30,13 +29,13 @@ public class Camera {
     }
 
     public void translate(Vector3 t) {
-        position = position.add(t);
+        super.add(t);
     }
     public void lookAt(Vector3 pos)
     {
-        hAngle = (pos.x-position.x < 0)? -Math.atan((pos.z-position.z)/(pos.x-position.x))-Math.PI/2 : Math.PI/2-Math.atan((pos.z-position.z)/(pos.x-position.x));
+        hAngle = (pos.x-super.x < 0)? -Math.atan((pos.z-super.z)/(pos.x-super.x))-Math.PI/2 : Math.PI/2-Math.atan((pos.z-super.z)/(pos.x-super.x));
 
-        vAngle = Math.atan((pos.y-position.y)/(Math.sqrt((pos.x-position.x)*(pos.x-position.x) + (pos.z-position.z)*(pos.z-position.z))));
+        vAngle = Math.atan((pos.y-super.y)/(Math.sqrt((pos.x-super.x)*(pos.x-super.x) + (pos.z-super.z)*(pos.z-super.z))));
         
         hAngle%=Math.PI;
         vAngle%=Math.PI;
@@ -73,7 +72,7 @@ public class Camera {
     }
     @Override
     public String toString() {
-        return position.toString();
+        return super.toString();
     }
     public Vector3 getDirectionVector() {
         return directionVector;

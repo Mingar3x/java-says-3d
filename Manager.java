@@ -75,8 +75,8 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         pixelsPerUnit = getWidth()/renderPlaneWidth;
         renderPlaneWidth = c.getRenderPlaneWidth();
         camDirection = c.getDirectionVector();
-        camCenterPoint = Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.position);
-        renderPlane = new Plane(Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.position), camDirection);
+        camCenterPoint = Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.getPosition());
+        renderPlane = new Plane(Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.getPosition()), camDirection);
         pointRotationQuaternion = BigUtils.createRotationQuaternion(c.getVorientation(), -c.getHorientation());
         
         
@@ -135,7 +135,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
     private void triToScreen(Triangle triangle)
     {
         Vector3 triangleCenter = triangle.getCenter();
-        double distanceToTriangle = Vector3.subtract(triangleCenter, c.position).getMagnitude(); 
+        double distanceToTriangle = Vector3.subtract(triangleCenter, c.getPosition()).getMagnitude(); 
         if (distanceToTriangle > maxTriangleDistance)
             maxTriangleDistance = distanceToTriangle;
         else if (distanceToTriangle < minTriangleDistance)
@@ -166,7 +166,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         boolean shouldDrawTriangle = false;
 
         //get intersection with render plane 
-        triangleVertex1 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex1, c.position), c.position, renderPlane);
+        triangleVertex1 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex1, c), c.getPosition(), renderPlane);
 
         //rotate the point
         triangleVertex1 = Vector3.rotate(Vector3.subtract(triangleVertex1, camCenterPoint), pointRotationQuaternion);
@@ -180,14 +180,14 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         p1ScreenCoords.y = (int)(getHeight()/2 - triangleVertex1.y*pixelsPerUnit);
 
         //repeat for other points
-        triangleVertex2 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex2, c.position), c.position, renderPlane);
+        triangleVertex2 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex2, c.getPosition()), c.getPosition(), renderPlane);
         triangleVertex2 = Vector3.rotate(Vector3.subtract(triangleVertex2, camCenterPoint), pointRotationQuaternion);
         if ((Math.abs(triangleVertex2.x) < renderPlaneWidth/2 && Math.abs(triangleVertex2.y) < renderPlaneWidth*((double)getHeight()/getWidth())/2))
             shouldDrawTriangle = true;
         p2ScreenCoords.x = (int)(getWidth()/2 + triangleVertex2.x*pixelsPerUnit);
         p2ScreenCoords.y = (int)(getHeight()/2 - triangleVertex2.y*pixelsPerUnit);
 
-        triangleVertex3 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex3, c.position), c.position, renderPlane);
+        triangleVertex3 = Vector3.getIntersectionPoint(Vector3.subtract(triangleVertex3, c.getPosition()), c.getPosition(), renderPlane);
         triangleVertex3 = Vector3.rotate(Vector3.subtract(triangleVertex3, camCenterPoint), pointRotationQuaternion);
         if ((Math.abs(triangleVertex3.x) < renderPlaneWidth/2 && Math.abs(triangleVertex3.y) < renderPlaneWidth*((double)getHeight()/getWidth())/2))
             shouldDrawTriangle = true;
@@ -195,9 +195,9 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         p3ScreenCoords.y = (int)(getHeight()/2 - triangleVertex3.y*pixelsPerUnit);
 
         if (shouldDrawTriangle){
-            Triangle screenTri = new Triangle(new Vector3(p1ScreenCoords.x, p1ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex1, c.position)),
-            new Vector3(p2ScreenCoords.x, p2ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex2, c.position)),
-            new Vector3(p3ScreenCoords.x, p3ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex3, c.position)), 
+            Triangle screenTri = new Triangle(new Vector3(p1ScreenCoords.x, p1ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex1, c.getPosition())),
+            new Vector3(p2ScreenCoords.x, p2ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex2, c.getPosition())),
+            new Vector3(p3ScreenCoords.x, p3ScreenCoords.y, Vector3.getDiagonalDistance(triangleVertex3, c.getPosition())), 
             triangle.color);
             screenSpaceMap.add(screenTri);
         }
