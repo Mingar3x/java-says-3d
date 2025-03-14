@@ -38,6 +38,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
 
     //VertexPool will not work for moving vertices, probably
     static ArrayList<GeometryGroup> staticMeshMap = new ArrayList<>();
+    static ArrayList<Line> linesToDraw = new ArrayList<>();
     ArrayList<Triangle> screenSpaceMap = new ArrayList<>(); //used to store transformed triangles to render
 
     //constructor
@@ -78,7 +79,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         camCenterPoint = Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.getPosition());
         renderPlane = new Plane(Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.getPosition()), camDirection);
         pointRotationQuaternion = BigUtils.createRotationQuaternion(c.getVorientation(), -c.getHorientation());
-        
+        renderPlane = new Plane(Vector3.add(Vector3.multiply(camDirection, c.getRenderPlaneDistance()), c.getPosition()), camDirection);
         
 
         g2.setColor(Color.GREEN);
@@ -107,21 +108,51 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
                 path.lineTo(t.v1.x, t.v1.y);
                 path.closePath();
                 g2.setColor(t.color);
-                g2.fill(path);
+                //g2.fill(path);
                 ix++;
          }
+         for (Line line : linesToDraw) {
+            renderLine(g2, line);
+        }
     }
     public void initalizeScreen(){
         // yo so this ↓↓ is the camera
         c = new Camera(new Vector3(0,0,0),90);
-        c.lookAt(new Vector3(0,1,-1));
+        c.lookAt(new Vector3(0,0,-1));
         renderPlaneWidth = c.getRenderPlaneWidth();        
         geo.makeStaticPlane(-5,5,5,-5,-5,-5,Color.PINK,Color.ORANGE);
         geo.makeStaticPlane(-50,50,50,-50,-50,-50,Color.RED,Color.BLUE);
+        Line l = new Line(new Vector3(-1000000, 0, 0),new Vector3(1000000, 0, 0),Color.blue); //X AXIS
+        linesToDraw.add(l);
+        l = new Line(new Vector3(0, -1000000, 0),new Vector3(0, 1000000, 0),Color.RED); //Y AXIS
+        linesToDraw.add(l);
+        l = new Line(new Vector3(0, 0, -1000000),new Vector3(0, 0, 1000000),Color.PINK); //z AXIS
+        linesToDraw.add(l);
+        //invisable cursor
         myFrame.setCursor( myFrame.getToolkit().createCustomCursor(
                    new BufferedImage( 1, 1, BufferedImage.TYPE_INT_ARGB ),
                    new Point(),
                    null ) );
+    }
+    private void renderLine(Graphics2D g2, Line line) {
+        Vector3 start = line.getPoint1();
+        Vector3 end = line.getPoint2();
+    
+        start = transformToScreen(start);
+        end = transformToScreen(end);
+    
+        g2.setColor(line.c);
+        g2.drawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y);
+    }
+    
+    private Vector3 transformToScreen(Vector3 point) {
+        point = Vector3.getIntersectionPoint(Vector3.subtract(point, c.getPosition()), c.getPosition(), renderPlane);
+        point = Vector3.rotate(Vector3.subtract(point, camCenterPoint), pointRotationQuaternion);
+
+        int screenX = (int) (getWidth() / 2 + point.x * pixelsPerUnit);
+        int screenY = (int) (getHeight() / 2 - point.y * pixelsPerUnit);
+    
+        return new Vector3(screenX, screenY, point.z);
     }
     public void gameTick() {
         //other calculations and whatnot
@@ -140,19 +171,19 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
             maxTriangleDistance = distanceToTriangle;
         else if (distanceToTriangle < minTriangleDistance)
             minTriangleDistance = distanceToTriangle;
-        // if 
-        // (
-        //     Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0 //is the triangle behind the camera?
-        //     || distanceToTriangle >= c.far //is the triangle too far away?
-        //     || distanceToTriangle <= c.near //is the triangle too close?
-        // ){
-        //     System.out.println("skipped a triangle");
-        //     System.out.println("near plane error:"+(distanceToTriangle <= c.near));
-        //     System.out.println("far plane error:"+(distanceToTriangle >= c.far));
-        //     System.out.println("behind camera error:"+(Vector3.dotProduct(Vector3.subtract(triangleCenter, c.position), camDirection) <= 0));
-        //     return;
-        //     //if the trianle meets one of the above contitions it is not eligable for rendering at this time
-        // }
+        if 
+        (
+            Vector3.dotProduct(Vector3.subtract(triangleCenter, c.getPosition()), camDirection) <= 0 //is the triangle behind the camera?
+            || distanceToTriangle >= c.far //is the triangle too far away?
+            || distanceToTriangle <= c.near //is the triangle too close?
+        ){
+            System.out.println("skipped a triangle");
+            System.out.println("near plane error:"+(distanceToTriangle <= c.near));
+            System.out.println("far plane error:"+(distanceToTriangle >= c.far));
+            System.out.println("behind camera error:"+(Vector3.dotProduct(Vector3.subtract(triangleCenter, c.getPosition()), camDirection) <= 0));
+            return;
+            //if the trianle meets one of the above contitions it is not eligable for rendering at this time
+        }
            
         //clone the triangle's vertices:
         Vector3 triangleVertex1 = triangle.v1.clone();
