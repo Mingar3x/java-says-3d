@@ -90,7 +90,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         screenSpaceMap = new ArrayList<Triangle>();
 
         //find screen space for each tri
-        for (GeometryGroup entry : staticMeshMap) { 
+        for (GeometryGroup entry : staticMeshMap){
             TriangleGroup value = entry.triangleGroup;
             for (Triangle t : value.triangles) {
                 triToScreen(t);
@@ -119,7 +119,7 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
         // yo so this ↓↓ is the camera
         c = new Camera(new Vector3(0,0,0),90);
         c.lookAt(new Vector3(0,0,-1));
-        renderPlaneWidth = c.getRenderPlaneWidth();        
+        renderPlaneWidth = c.getRenderPlaneWidth();
         geo.makeStaticPlane(-5,5,5,-5,-5,-5,Color.PINK,Color.ORANGE);
         geo.makeStaticPlane(-50,50,50,-50,-50,-50,Color.RED,Color.BLUE);
         Line l = new Line(new Vector3(-1000000, 0, 0),new Vector3(1000000, 0, 0),Color.blue); //X AXIS
@@ -171,19 +171,19 @@ public class Manager extends JPanel implements KeyListener , MouseMotionListener
             maxTriangleDistance = distanceToTriangle;
         else if (distanceToTriangle < minTriangleDistance)
             minTriangleDistance = distanceToTriangle;
-        // if 
-        // (
-        //     Vector3.dotProduct(Vector3.subtract(triangleCenter, c.getPosition()), camDirection) <= 0 //is the triangle behind the camera?
-        //     || distanceToTriangle >= c.far //is the triangle too far away?
-        //     || distanceToTriangle <= c.near //is the triangle too close?
-        // ){
-        //     System.out.println("skipped a triangle");
-        //     System.out.println("near plane error:"+(distanceToTriangle <= c.near));
-        //     System.out.println("far plane error:"+(distanceToTriangle >= c.far));
-        //     System.out.println("behind camera error:"+(Vector3.dotProduct(Vector3.subtract(triangleCenter, c.getPosition()), camDirection) <= 0));
-        //     return;
-        //     //if the trianle meets one of the above contitions it is not eligable for rendering at this time
-        // }
+        if 
+        (
+            Vector3.dotProduct(Vector3.subtract(triangleCenter, c.getPosition()), camDirection) <= 0 //is the triangle behind the camera?
+            || distanceToTriangle >= c.far //is the triangle too far away?
+            || distanceToTriangle <= c.near //is the triangle too close?
+        ){
+            System.out.println("skipped a triangle");
+            System.out.println("near plane error:"+(distanceToTriangle <= c.near));
+            System.out.println("far plane error:"+(distanceToTriangle >= c.far));
+            System.out.println("behind camera error:"+(Vector3.dotProduct(Vector3.subtract(triangleCenter, c.getPosition()), camDirection) <= 0));
+            return;
+            //if the trianle meets one of the above contitions it is not eligable for rendering at this time
+        }
            
         //clone the triangle's vertices:
         Vector3 triangleVertex1 = triangle.v1.clone();
